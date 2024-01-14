@@ -31,7 +31,8 @@ export class AppComponent implements AfterViewInit{
     this.canvas.nativeElement.onmousedown = (e) => e.button !== 1;
 
     console.log(this.canvas);
-    this.renderer = new THREE.WebGLRenderer( { antialias: true, canvas: this.canvas.nativeElement } );
+    // play with antialias to check performance
+    this.renderer = new THREE.WebGLRenderer( { antialias: true, canvas: this.canvas.nativeElement, powerPreference: "high-performance" } );
     console.log(this.renderer);
 
     this.camera = new THREE.OrthographicCamera();
@@ -47,14 +48,15 @@ export class AppComponent implements AfterViewInit{
     controls.target.set(0, 0, 0);
     controls.update();
 
-    const boxWidth = 1;
-    const boxHeight = 1;
-    const boxDepth = 1;
-    const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
+    const points = [];
+    points.push( new THREE.Vector3( -0.5, 0.5) );
+    points.push( new THREE.Vector3( 0, 0) );
+    points.push( new THREE.Vector3( 0.5, 0.5) );
 
-    this.makeInstance(geometry, 0x44aa88,  0);
-    this.makeInstance(geometry, 0x8844aa, -2);
-    this.makeInstance(geometry, 0xaa8844,  2);
+    const geometry = new THREE.BufferGeometry().setFromPoints( points );
+    const material = new THREE.MeshBasicMaterial( { color: 0x0000ff, transparent: true, opacity: 0.5 } );
+    const mesh = new THREE.Mesh(geometry, material);
+    this.scene.add(mesh);
 
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.resizeRendererToDisplaySize();
@@ -62,17 +64,6 @@ export class AppComponent implements AfterViewInit{
     controls.addEventListener('change', () => this.render());
     window.addEventListener( 'resize', () => this.resizeRendererToDisplaySize());
   }
-
-  makeInstance(geometry: THREE.BoxGeometry, color: THREE.ColorRepresentation, x: number) {
-		const material = new THREE.MeshPhongMaterial( { color } );
-
-		const cube = new THREE.Mesh( geometry, material );
-		this.scene.add( cube );
-
-		cube.position.x = x;
-
-		return cube;
-	}
 
 	render() {
 		this.renderer.render(this.scene, this.camera );

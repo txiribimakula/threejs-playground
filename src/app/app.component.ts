@@ -28,6 +28,8 @@ export class AppComponent implements AfterViewInit{
   }
   
   ngAfterViewInit(): void {
+    this.canvas.nativeElement.onmousedown = (e) => e.button !== 1;
+
     console.log(this.canvas);
     this.renderer = new THREE.WebGLRenderer( { antialias: true, canvas: this.canvas.nativeElement } );
     console.log(this.renderer);

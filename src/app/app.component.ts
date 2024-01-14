@@ -16,7 +16,7 @@ export class AppComponent implements AfterViewInit{
 
   scene: THREE.Scene;
 	renderer!: THREE.WebGLRenderer;
-  camera!: THREE.PerspectiveCamera;
+  camera!: THREE.OrthographicCamera;
 
   constructor() {
     this.scene = new THREE.Scene();
@@ -32,14 +32,16 @@ export class AppComponent implements AfterViewInit{
     this.renderer = new THREE.WebGLRenderer( { antialias: true, canvas: this.canvas.nativeElement } );
     console.log(this.renderer);
 
-    const fov = 75;
-    const aspect = 2;  // the canvas default
-    const near = 0.1;
-    const far = 5;
-    this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+    this.camera = new THREE.OrthographicCamera();
     this.camera.position.z = 2;
     
     const controls = new OrbitControls(this.camera, this.canvas.nativeElement);
+    controls.mouseButtons = {
+      LEFT: undefined,
+      MIDDLE: THREE.MOUSE.PAN,
+      RIGHT: undefined
+    }
+    controls.zoomToCursor = true;
     controls.target.set(0, 0, 0);
     controls.update();
 
@@ -52,9 +54,11 @@ export class AppComponent implements AfterViewInit{
     this.makeInstance(geometry, 0x8844aa, -2);
     this.makeInstance(geometry, 0xaa8844,  2);
 
-    this.render();
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.resizeRendererToDisplaySize();
 
     controls.addEventListener('change', () => this.render());
+    window.addEventListener( 'resize', () => this.resizeRendererToDisplaySize());
   }
 
   makeInstance(geometry: THREE.BoxGeometry, color: THREE.ColorRepresentation, x: number) {
@@ -69,11 +73,6 @@ export class AppComponent implements AfterViewInit{
 	}
 
 	render() {
-		if ( this.resizeRendererToDisplaySize() ) {
-			const canvas = this.renderer.domElement;
-			this.camera.aspect = canvas.clientWidth / canvas.clientHeight;
-			this.camera.updateProjectionMatrix();
-		}
 		this.renderer.render(this.scene, this.camera );
 	}
 
@@ -81,14 +80,11 @@ export class AppComponent implements AfterViewInit{
 		const canvas = this.renderer.domElement;
 		const width = canvas.clientWidth;
 		const height = canvas.clientHeight;
-		const needResize = canvas.width !== width || canvas.height !== height;
-		if ( needResize ) {
-
+		const isResizeNeeded = canvas.width !== width || canvas.height !== height;
+		if (isResizeNeeded) {
 			this.renderer.setSize( width, height, false );
-
+			this.camera.updateProjectionMatrix();
+      this.render();
 		}
-
-		return needResize;
-
 	}
 }
